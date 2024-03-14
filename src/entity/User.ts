@@ -23,8 +23,4 @@ export class User {
 
   @Column()
   role: string;
-
-  @ManyToMany(() => Event)
-  @JoinTable()
-  registeredEvents: Event[];
 }

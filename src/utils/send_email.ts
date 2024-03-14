@@ -1,46 +1,35 @@
-import nodemailer, { Transporter } from 'nodemailer';
-require('dotenv').config();
+import nodemailer from 'nodemailer';
+import mjml from 'mjml';
+import handlebars from 'handlebars';
+import fs from 'fs';
+import env from '../utils/validateEnv';
 
-import ejs from 'ejs';
-import path from 'path';
+const mjmlTemplate = fs.readFileSync('src/mails/email.mjml', 'utf8');
 
-export interface Emailoptions {
-  email: string;
-  subject: string;
-  template: string;
-  data: { [key: string]: any };
-}
+const { html } = mjml(mjmlTemplate);
 
-const sendmail = async (options: Emailoptions): Promise<void> => {
-  console.log('options are', options);
-  //console.log(process.env.SMTP_HOST,process.env.SMTP_PORT,process.env.SMTP_SERVICE,process.env.SMTP_MAIL,process.env.SMTP_PASSWORD,)
-  console.log('host is', process.env.SMTP_PASSWORD);
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
+  auth: {
+    user: env.SMTP_MAIL,
+    pass: env.SMTP_PASSWORD,
+  },
+});
 
-  const transporter: Transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || '587'), 
-    service: process.env.SMTP_SERVICE,
-
-    auth: {
-      user: process.env.SMTP_MAIL, 
-      pass: process.env.SMTP_PASSWORD,
-    },
+export const sendMail = async (
+  to: string,
+  subject: string,
+  eventTitle: string,
+  eventDescription: string,
+) => {
+  const template = handlebars.compile(html);
+  await transporter.sendMail({
+    from: 'madhavdhungana36@gmail.com',
+    to: to,
+    subject: subject,
+    html: template({ subject, eventTitle, eventDescription }),
   });
-
-  const { email, data, subject, template } = options;
-
-  const templetePath = path.join(__dirname, '../../src/mails', template);
-
-  const html = await ejs.renderFile(templetePath, data);
-
-  const mailoptions = {
-    from: process.env.SMTP_MAIL,
-    to: email,
-    subject,
-    html,
-  };
-
-  await transporter.sendMail(mailoptions);
 };
-
-export default sendmail;

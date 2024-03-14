@@ -30,10 +30,7 @@ export class Event {
   @Column()
   startDate: Date;
 
-  @Column()
-  endDate: Date;
-
-  @ManyToMany(() => User)
-  @JoinTable()
+  @ManyToMany(() => User, { eager: true })
+  @JoinTable({ name: 'event_registered_users' })
   registeredUsers: User[];
 }

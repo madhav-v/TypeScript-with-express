@@ -6,6 +6,7 @@ import { User } from './entity/User';
 import { Event } from './entity/Event';
 import routes from './routes/index';
 import { createConnection } from 'typeorm';
+import { runCronJob } from './utils/cron-job';
 
 const app = express();
 app.use(express.json());
@@ -24,6 +25,7 @@ createConnection({
 })
   .then(() => {
     console.log('Database connected');
+    runCronJob();
     app.listen(env.PORT, () => {
       console.log(`Server running on port ${env.PORT}`);
     });
