@@ -3,6 +3,7 @@ import mjml from 'mjml';
 import handlebars from 'handlebars';
 import fs from 'fs';
 import env from '../utils/validateEnv';
+import logger from '../config/logger';
 
 const mjmlTemplate = fs.readFileSync('src/mails/email.mjml', 'utf8');
 
@@ -32,4 +33,5 @@ export const sendMail = async (
     subject: subject,
     html: template({ subject, eventTitle, eventDescription }),
   });
+  logger.info(`Email sent to ${to} with subject: ${subject}`);
 };

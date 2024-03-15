@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { getRepository } from 'typeorm';
 import { EventCreateType } from '../types/event.types';
 import { Event } from '../entity/Event';
+import logger from '../config/logger';
 
 export class EventController {
   createEvent = async (req: Request, res: Response, next: NextFunction) => {
@@ -35,7 +36,9 @@ export class EventController {
         event: result,
         message: 'Event created successfully',
       });
+      logger.info('Event saved successfully', event);
     } catch (error) {
+      logger.error('Error saving event', error);
       next(error);
     }
   };
@@ -45,7 +48,9 @@ export class EventController {
       const eventRepository = getRepository(Event);
       const events = await eventRepository.find();
       res.json(events);
+      logger.info('Events fetched successfully');
     } catch (error: any) {
+      logger.error(`Failed to retrieve all events`, error);
       next(error);
     }
   };
@@ -59,7 +64,9 @@ export class EventController {
         return res.status(404).json({ message: 'Event not found' });
       }
       res.json(event);
+      logger.info('Event fetched successfully');
     } catch (error: any) {
+      logger.error(`Failed to retrieve event`, error);
       next(error);
     }
   };

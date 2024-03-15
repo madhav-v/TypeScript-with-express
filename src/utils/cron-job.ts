@@ -7,6 +7,7 @@ import mjml from 'mjml';
 import handlebars from 'handlebars';
 import fs from 'fs';
 import env from '../utils/validateEnv';
+import logger from '../config/logger';
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -30,7 +31,7 @@ const sendMail = async (
       subject: subject,
       html: html,
     });
-    console.log('Email sent successfully');
+    logger.info('Sent mail successfully');
   } catch (error) {
     console.error('Error sending email:', error);
   }
@@ -42,6 +43,7 @@ const sendTodayMails = async (events: Event[]): Promise<void> => {
 
     const html = template({ todayEvents: events }); // Pass 'todayEvents' to the template
     await sendMail('madhavdhungana36@gmail.com', "Today's Events", html);
+    logger.info('Sent mail successfully');
   } catch (error) {
     console.error('Error sending email:', error);
   }
@@ -63,6 +65,7 @@ export const runCronJob = (): void => {
         },
       });
       await sendTodayMails(todayEvents);
+      logger.info('Sent mail successfully crunjob');
     } catch (error: any) {
       console.log('Error on cronjob', error);
     }

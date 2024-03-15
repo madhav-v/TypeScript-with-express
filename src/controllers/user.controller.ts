@@ -3,6 +3,7 @@ import { getRepository } from 'typeorm';
 import { Event } from '../entity/Event';
 import { User } from '../entity/User';
 import { sendMail } from '../utils/send_email';
+import logger from '../config/logger';
 
 export class UserController {
   bookEvent = async (req: Request, res: Response, next: NextFunction) => {
@@ -32,6 +33,7 @@ export class UserController {
         event.title,
         event.description,
       );
+      logger.info('Event booked successfully', event.title, event.description);
 
       res.status(200).json({ message: 'Event booked successfully' });
     } catch (error: any) {
@@ -54,6 +56,7 @@ export class UserController {
       if (!event) {
         return res.status(404).json({ message: 'Event not found' });
       }
+      logger.debug(`Returning registered users for event ${event.id}`);
       res.status(200).json(event.registeredUsers);
     } catch (error: any) {
       next(error);

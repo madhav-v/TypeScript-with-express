@@ -5,9 +5,10 @@ import { User } from '../entity/User';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import env from '../utils/validateEnv';
+import logger from '../config/logger';
 
 export class AuthController {
-  createUser = async (req: Request, res: Response, next: NextFunction) => {
+  createUser = async (req: Request, res: Response) => {
     try {
       const data = req.body as UserRegisterType;
 
@@ -28,13 +29,15 @@ export class AuthController {
       });
       let result = await userRepository.save(user);
 
-      // Send success response with status code 201
       res.status(201).json({
         user: result,
         message: 'User Created Successfully',
       });
+
+      logger.info('User created successfully', res.status(201).json);
     } catch (error) {
-      next(error);
+      logger.error('Error in registration', error);
+      console.log(error);
     }
   };
 
@@ -61,8 +64,10 @@ export class AuthController {
         token: token,
         message: 'Login Successful',
       });
+
+      logger.info('Login Successful', user);
     } catch (error) {
-      next(error);
+      logger.error('Error in login', error);
     }
   };
 }
