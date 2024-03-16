@@ -7,10 +7,12 @@ import { Event } from './entity/Event';
 import routes from './routes/index';
 import { createConnection } from 'typeorm';
 import { runCronJob } from './utils/cron-job';
+import swaggerApp from "./utils/swagger"
 
 const app = express();
 app.use(express.json());
 app.use('/api/v1', routes);
+app.use(swaggerApp)
 
 createConnection({
   type: 'postgres',
