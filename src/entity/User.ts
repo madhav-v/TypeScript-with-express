@@ -1,11 +1,8 @@
 import {
   Column,
   Entity,
-  JoinTable,
-  ManyToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Event } from './Event';
 
 @Entity()
 export class User {
