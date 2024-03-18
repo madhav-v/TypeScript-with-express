@@ -5,7 +5,15 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Repository } from 'typeorm';
 import { mock } from 'jest-mock-extended';
+import * as typeorm from 'typeorm';
 
+jest.mock('typeorm', () => ({
+  ...jest.requireActual('typeorm'),
+  getRepository: jest.fn(),
+}));
+
+jest.mock('bcrypt');
+jest.mock('jsonwebtoken');
 describe('AuthController', () => {
   let authController: AuthController;
   let req: Partial<Request>;
@@ -13,11 +21,10 @@ describe('AuthController', () => {
   let next: Partial<NextFunction>;
   let userRepositoryMock: jest.Mocked<Repository<User>>;
 
-  beforeAll(() => {
-    userRepositoryMock = mock<Repository<User>>();
-  });
 
   beforeEach(() => {
+    userRepositoryMock = mock<Repository<User>>();
+    (typeorm.getRepository as jest.Mock).mockReturnValue(userRepositoryMock);
     authController = new AuthController();
     req = {};
     res = {
@@ -50,7 +57,7 @@ describe('AuthController', () => {
       userRepositoryMock.findOne.mockResolvedValue(null);
       userRepositoryMock.create.mockReturnValue(user);
       userRepositoryMock.save.mockResolvedValue(user);
-      (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword' as never);
+      (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
 
       req.body = data;
       await authController.createUser(req as Request, res as Response);
@@ -73,7 +80,7 @@ describe('AuthController', () => {
       user.password = 'hashedPassword';
 
       userRepositoryMock.findOne.mockResolvedValue(user);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true as never);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       (jwt.sign as jest.Mock).mockReturnValue('token');
 
       req.body = { email, password };

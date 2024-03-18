@@ -5,7 +5,7 @@ import { mock } from 'jest-mock-extended';
 import * as typeorm from 'typeorm';
 
 jest.mock('typeorm', () => ({
-  ...jest.requireActual('typeorm'), // Preserve other exports
+  ...jest.requireActual('typeorm'), 
   getRepository: jest.fn(),
 }));
 
@@ -91,5 +91,4 @@ describe('EventController', () => {
     });
   });
 
-  // You can write similar tests for getAllEvents and getEventById methods
 });
