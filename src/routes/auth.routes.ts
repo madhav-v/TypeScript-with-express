@@ -67,6 +67,8 @@ router.post('/register', authCtrl.createUser);
  */
 router.post('/login', authCtrl.loginUser);
 
+router.post('/refresh-token', authCtrl.refreshToken);
+
 /**
  * @swagger
  * tags:

@@ -5,14 +5,21 @@ import { NextFunction, Request, Response } from 'express';
 import ErrorHandler from '../utils/errorhandler';
 
 export interface CustomRequest extends Request{
-    user: undefined
+    user?: any
 }
 
 
 //check Auth
 export const checkAuth = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: CustomRequest, res: Response, next: NextFunction) => {
     try {
+      const token = req.header('Authorization');
+      if (!token) {
+        throw new ErrorHandler('Access Denied', 401);
+      }
+      const decoded = jwt.verify(token, environment.JWT_SECRET);
+      req.user = decoded;
+      next();
     } catch (error: any) {
       throw new ErrorHandler(error, 404);
     }

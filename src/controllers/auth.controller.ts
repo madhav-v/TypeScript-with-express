@@ -47,7 +47,7 @@ export class AuthController {
       const userRepository = getRepository(User);
       const user = await userRepository.findOne({ where: { email } });
       if (!user) {
-        return res.status(400).json({ message: 'Invalid email or password' });
+        return res.status(400).json({ message: 'User doesnot exists' });
       }
 
       const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -55,19 +55,51 @@ export class AuthController {
         return res.status(400).json({ message: 'Invalid email or password' });
       }
 
-      const token = jwt.sign({ userId: user.id }, env.JWT_SECRET, {
+      let accessToken = jwt.sign({ userId: user.id }, env.JWT_SECRET, {
         expiresIn: 86400,
+      });
+
+      let refreshToken = jwt.sign({ userId: user.id }, env.JWT_SECRET, {
+        expiresIn: '5d',
       });
 
       res.json({
         user: user,
-        token: token,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
         message: 'Login Successful',
       });
 
       logger.info('Login Successful', user);
     } catch (error) {
       logger.error('Error in login', error);
+    }
+  };
+
+  refreshToken = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const refreshToken = req.body.refreshToken;
+      if (!refreshToken) {
+        return res.status(403).json({ message: 'Refresh token is required' });
+      }
+      jwt.verify(refreshToken, env.JWT_SECRET, (err: any, decoded: any) => {
+        if (err) {
+          return res.status(401).json({ message: 'Invalid refresh token' });
+        }
+
+        // If refresh token is valid, generate a new access token
+        const accessToken = jwt.sign(
+          { userId: decoded.userId },
+          env.JWT_SECRET,
+          {
+            expiresIn: 86400,
+          },
+        );
+
+        res.json({ accessToken });
+      });
+    } catch (error: any) {
+      logger.error('Error in refreshing token', error);
     }
   };
 }
