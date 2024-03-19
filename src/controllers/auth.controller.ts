@@ -96,7 +96,10 @@ export class AuthController {
           },
         );
 
-        res.json({ accessToken });
+        res.json({
+          accessToken: accessToken,
+          message: 'Token Refreshed',
+        });
       });
     } catch (error: any) {
       logger.error('Error in refreshing token', error);
