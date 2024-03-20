@@ -63,6 +63,9 @@ export class AuthController {
         expiresIn: '5d',
       });
 
+      user.refreshToken = refreshToken;
+      await userRepository.save(user);
+
       res.json({
         user: user,
         accessToken: accessToken,
@@ -82,25 +85,40 @@ export class AuthController {
       if (!refreshToken) {
         return res.status(403).json({ message: 'Refresh token is required' });
       }
-      jwt.verify(refreshToken, env.JWT_SECRET, (err: any, decoded: any) => {
-        if (err) {
-          return res.status(401).json({ message: 'Invalid refresh token' });
-        }
+      jwt.verify(
+        refreshToken,
+        env.JWT_SECRET,
+        async (err: any, decoded: any) => {
+          if (err) {
+            return res.status(401).json({ message: 'Invalid refresh token' });
+          }
 
-        // If refresh token is valid, generate a new access token
-        const accessToken = jwt.sign(
-          { userId: decoded.userId },
-          env.JWT_SECRET,
-          {
-            expiresIn: 86400,
-          },
-        );
+          // Update refresh token in the database
+          const userRepository = getRepository(User);
+          const user = await userRepository.findOne({
+            where: { id: decoded.userId },
+          });
+          if (!user) {
+            return res.status(401).json({ message: 'User not found' });
+          }
+          user.refreshToken = refreshToken;
+          await userRepository.save(user);
 
-        res.json({
-          accessToken: accessToken,
-          message: 'Token Refreshed',
-        });
-      });
+          // Generate new access token
+          const accessToken = jwt.sign(
+            { userId: decoded.userId },
+            env.JWT_SECRET,
+            {
+              expiresIn: 86400,
+            },
+          );
+
+          res.json({
+            accessToken: accessToken,
+            message: 'Token Refreshed',
+          });
+        },
+      );
     } catch (error: any) {
       logger.error('Error in refreshing token', error);
     }
